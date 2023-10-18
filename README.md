@@ -49,5 +49,5 @@ Styling is enhanced using CSS to offer a clearer visual distinction. Styles are 
 
 
 ---<img width="659" alt="Screenshot 2023-10-18 143558" src="https://github.com/alimgrbz/CS405_Homework1/assets/134507100/6e700f52-d423-455e-9c42-f7377e4a1d52">
-
+ 
 
