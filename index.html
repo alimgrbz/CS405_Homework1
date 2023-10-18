@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS405 homework1 Bar Chart with Curve</title>
+    <style>
+        svg {
+            background-color: white;
+        }
+
+        .bar {
+            fill: steelblue;
+        }
+
+        .axis-label {
+            font-size: 12px;
+        }
+
+        .axis-line {
+            stroke: #333;
+            stroke-width: 1;
+        }
+
+        .value-label {
+            font-size: 12px;
+            fill: black;
+        }
+
+        .curve {
+            fill: none;
+            stroke: red;
+            stroke-width: 2;
+        }
+
+        .legend {
+            font-size: 14px;
+        }
+
+        .legend-bar-rect {
+            width: 10;
+            height: 10;
+            fill: steelblue;
+        }
+        
+        .legend-curve-rect {
+            width: 10;
+            height: 10;
+            fill: none;
+            stroke: red;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <svg id="chart" width="1000" height="1000"></svg>
+
+    <script>
+        const data = [
+            { year: 2000, value: 1802, rate: 2.80 },
+            { year: 2001, value: 2584, rate: 3.97 },
+            { year: 2002, value: 2301, rate: 3.49 },
+            { year: 2003, value: 2705, rate: 4.05 },
+            { year: 2004, value: 2707, rate: 4.00 },
+            { year: 2005, value: 2703, rate: 3.95 },
+            { year: 2006, value: 2829, rate: 4.08 },
+            { year: 2007, value: 2793, rate: 3.98 },
+            { year: 2008, value: 2816, rate: 3.96 },
+            { year: 2009, value: 2898, rate: 4.02 },
+            { year: 2010, value: 2933, rate: 4.01 },
+            { year: 2011, value: 2677, rate: 3.61 },
+            { year: 2012, value: 3287, rate: 4.37 },
+            { year: 2013, value: 3252, rate: 4.27 },
+            { year: 2014, value: 3169, rate: 4.11 },
+            { year: 2015, value: 3246, rate: 4.15 },
+            { year: 2016, value: 3193, rate: 4.03 },
+            { year: 2017, value: 3168, rate: 3.94 },
+            { year: 2018, value: 3342, rate: 4.11 },
+            { year: 2019, value: 3476, rate: 4.21 },
+            { year: 2020, value: 3710, rate: 4.45 },
+            { year: 2021, value: 4194, rate: 4.98 },
+            { year: 2022, value: 4146, rate: 4.88 }
+        ];
+        
+
+        
+        const svgWidth = 750;
+        const svgHeight = 500;
+        const barPadding = 5;
+        const barWidth = (svgWidth / data.length) - barPadding;
+        const maxValue = Math.max(...data.map(d => d.value));
+        const maxRate = Math.max(...data.map(d => d.rate));
+        const margin = { top: 40, right: 20, bottom: 60, left: 60 };
+
+        const svg = document.getElementById('chart');
+
+        data.forEach((d, index) => {
+            const barHeight = (d.value / maxValue) * (svgHeight - margin.top - margin.bottom);
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', margin.left + index * (barWidth + barPadding));
+            rect.setAttribute('y', svgHeight - barHeight - margin.bottom);
+            rect.setAttribute('width', barWidth);
+            rect.setAttribute('height', barHeight);
+            rect.setAttribute('class', 'bar');
+            svg.appendChild(rect);
+        });
+
+        const curvePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        let d = '';
+        data.forEach((entry, index) => {
+            const x = margin.left + index * (barWidth + barPadding) + barWidth / 2;
+            const y = svgHeight - margin.bottom - (entry.rate / maxRate) * (svgHeight - margin.top - margin.bottom);
+            d += (index === 0 ? 'M' : 'L') + x + ',' + y;
+        });
+        curvePath.setAttribute('d', d);
+        curvePath.setAttribute('class', 'curve');
+        svg.appendChild(curvePath);
+
+        data.forEach((d, index) => {
+            if (index % 2 === 0) {
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                const x = margin.left + index * (barWidth + barPadding) + barWidth / 2;
+                const y = svgHeight - margin.bottom - (d.rate / maxRate) * (svgHeight - margin.top - margin.bottom) - 10;
+                label.setAttribute('x', x);
+                label.setAttribute('y', y);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('class', 'axis-label rate-label');
+                label.textContent = d.rate.toFixed(2);
+                svg.appendChild(label);
+            }
+        });
+
+        const yAxisLabelsCount = 20;
+        const valueIncrement = maxValue / yAxisLabelsCount;
+        
+        // labels
+        for (let i = 0; i <= yAxisLabelsCount; i++) {
+            const currentValue = i * valueIncrement;
+            const yPosition = svgHeight - margin.bottom - (currentValue / maxValue) * (svgHeight - margin.top - margin.bottom);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', margin.left - 10); 
+            label.setAttribute('y', yPosition + 5); 
+            label.setAttribute('text-anchor', 'end');
+            label.setAttribute('class', 'axis-label');
+            label.textContent = Math.round(currentValue).toString();
+            svg.appendChild(label);
+        }
+
+    
+        const hAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        hAxis.setAttribute('x1', margin.left);
+        hAxis.setAttribute('y1', svgHeight - margin.bottom);
+        hAxis.setAttribute('x2', svgWidth - margin.right);
+        hAxis.setAttribute('y2', svgHeight - margin.bottom);
+        hAxis.setAttribute('class', 'axis-line');
+        svg.appendChild(hAxis);
+
+        const vAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        vAxis.setAttribute('x1', margin.left);
+        vAxis.setAttribute('y1', margin.top);
+        vAxis.setAttribute('x2', margin.left);
+        vAxis.setAttribute('y2', svgHeight - margin.bottom);
+        vAxis.setAttribute('class', 'axis-line');
+        svg.appendChild(vAxis);
+
+        // year labels
+        data.forEach((d, index) => {
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const x = margin.left + index * (barWidth + barPadding) + barWidth / 2;
+            const y = svgHeight - margin.bottom + 15;
+            label.setAttribute('x', x);
+            label.setAttribute('y', y);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('class', 'axis-label');
+            label.textContent = d.year;
+            svg.appendChild(label);
+        });
+
+        // title
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        title.setAttribute('x', svgWidth / 2);
+        title.setAttribute('y', 20);
+        title.setAttribute('text-anchor', 'middle');
+        title.setAttribute('class', 'title');
+        title.textContent = 'Year vs. Value and Rate';
+        svg.appendChild(title);
+
+
+        // Legend
+        const legendSpace = 150; 
+        const legendHeight = svgHeight - 20; 
+
+        // Legend for Bars
+        const legendBarRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        legendBarRect.setAttribute('x', margin.left);
+        legendBarRect.setAttribute('y', legendHeight);
+        legendBarRect.setAttribute('class', 'legend-bar-rect');
+        svg.appendChild(legendBarRect);
+
+        const legendBarText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        legendBarText.setAttribute('x', margin.left + 15);
+        legendBarText.setAttribute('y', legendHeight + 9);
+        legendBarText.setAttribute('class', 'legend');
+        legendBarText.textContent = 'Suicide Rate';
+        svg.appendChild(legendBarText);
+
+        // Legend for Curve
+        const legendCurveRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        legendCurveRect.setAttribute('x', margin.left + legendSpace);
+        legendCurveRect.setAttribute('y', legendHeight);
+        legendCurveRect.setAttribute('class', 'legend-curve-rect');
+        svg.appendChild(legendCurveRect);
+
+        const legendCurveText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        legendCurveText.setAttribute('x', margin.left + legendSpace + 15);
+        legendCurveText.setAttribute('y', legendHeight + 9);
+        legendCurveText.setAttribute('class', 'legend');
+        legendCurveText.textContent = 'Crude Suicide Rate (per thousands)';
+        svg.appendChild(legendCurveText);
+
+
+
+    </script>
+</body>
+
+</html>
