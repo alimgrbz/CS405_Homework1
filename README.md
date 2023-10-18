@@ -1,4 +1,4 @@
-# CS 405 Homework 1: Suicide Statistics Visualization (2000-2022)
+# CS 405 Homework 1: : Basic Data Visualization using SVG’s 
 
 **Author**: Alım Gürbüz  
 
